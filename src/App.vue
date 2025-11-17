@@ -46,11 +46,31 @@ export default {
     },
   },
 
+  computed: {
+    filteredLessons() {
+      if (!this.searchQuery) {
+        return this.lessons;
+      }
+
+      const query = this.searchQuery.toLowerCase();
+
+      return this.lessons.filter((lesson) => {
+        return (
+          lesson.subject.toLowerCase().includes(query) ||
+          lesson.location.toLowerCase().includes(query) ||
+          String(lesson.price).includes(query) ||
+          String(lesson.spaces).includes(query)
+        );
+      });
+    },
+  },
+
   mounted() {
     this.fetchLessons();
   },
 };
 </script>
+
 
 
 <template>
@@ -100,7 +120,7 @@ export default {
 
 
 
-      <div v-for="lesson in lessons" :key="lesson._id" class="lesson-card">
+     <div v-for="lesson in filteredLessons" :key="lesson._id" class="lesson-card">
         <h3>{{ lesson.subject }}</h3>
         <p>Location: {{ lesson.location }}</p>
         <p>Price: £{{ lesson.price }}</p>
