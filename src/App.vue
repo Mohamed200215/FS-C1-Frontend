@@ -1,16 +1,19 @@
 <script>
 export default {
-  data() {
-    return {
-      lessons: [],
-      cart: [],
-      page: "lessons",
-      API_URL: "http://localhost:3000",
-      sortBy: "subject",
-      sortOrder: "asc",
-      searchQuery: "",
-    };
-  },
+data() {
+  return {
+    lessons: [],
+    cart: [],
+    page: "lessons",
+    API_URL: "http://localhost:3000",
+    sortBy: "subject",
+    sortOrder: "asc",
+    searchQuery: "",
+    name: "",
+    phone: "",
+  };
+},
+
 
   methods: {
     async fetchLessons() {
@@ -155,6 +158,27 @@ export default {
   <button @click="removeFromCart(item, index)">
     Remove
   </button>
+
+  <h3>Checkout</h3>
+
+<form class="checkout-form">
+  <input
+    type="text"
+    v-model="name"
+    placeholder="Your Name"
+  />
+
+  <input
+    type="text"
+    v-model="phone"
+    placeholder="Phone Number"
+  />
+
+  <button type="button">
+    Place Order
+  </button>
+</form>
+
 </div>
 
 
@@ -190,6 +214,22 @@ button {
   border: 1px solid #ccc;
 }
 
+.checkout-form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkout-form input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.checkout-form button {
+  padding: 8px;
+}
 
 
 </style>
