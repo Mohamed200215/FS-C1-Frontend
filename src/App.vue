@@ -41,12 +41,22 @@ export default {
       this.page = page;
     },
 
-    addToCart(lesson) {
-      if (lesson.spaces > 0) {
-        lesson.spaces--;
-        this.cart.push(lesson);
-      }
-    },
+addToCart(lesson) {
+  // Prevent duplicates
+  const exists = this.cart.find((item) => item._id === lesson._id);
+
+  if (exists) {
+    alert("This lesson is already in your cart.");
+    return;
+  }
+
+  // Continue like normal
+  if (lesson.spaces > 0) {
+    lesson.spaces--;
+    this.cart.push(lesson);
+  }
+},
+
 
     removeFromCart(item, index) {
       const lesson = this.lessons.find((l) => l._id === item._id);
@@ -76,7 +86,7 @@ export default {
       return !this.nameError && !this.phoneError && !this.checkoutError;
     },
 
-    // ✅ THIS WAS THE ISSUE — NOW IT'S INSIDE METHODS
+
     async placeOrder() {
       if (!this.validateCheckout()) return;
 
