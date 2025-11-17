@@ -108,19 +108,23 @@ export default {
     },
   },
 
-  computed: {
-    filteredLessons() {
-      const q = this.searchQuery.toLowerCase();
-      return !q
-        ? this.lessons
-        : this.lessons.filter((lesson) =>
-            lesson.subject.toLowerCase().includes(q) ||
-            lesson.location.toLowerCase().includes(q) ||
-            String(lesson.price).includes(q) ||
-            String(lesson.spaces).includes(q)
-          );
-    },
+computed: {
+  filteredLessons() {
+    const q = this.searchQuery.toLowerCase();
+    return !q
+      ? this.lessons
+      : this.lessons.filter((lesson) =>
+          lesson.subject.toLowerCase().includes(q) ||
+          lesson.location.toLowerCase().includes(q) ||
+          String(lesson.price).includes(q) ||
+          String(lesson.spaces).includes(q)
+        );
   },
+
+  totalPrice() {
+    return this.cart.reduce((sum, item) => sum + item.price, 0);
+  }
+},
 
   mounted() {
     this.fetchLessons();
@@ -213,6 +217,9 @@ export default {
     </div>
 
     <!-- Checkout form -->
+
+<p class="total">Total: £{{ totalPrice }}</p>
+
     <h3>Checkout</h3>
 
     <form class="checkout-form">
@@ -288,6 +295,12 @@ button {
 
 .checkout-form button {
   padding: 8px;
+}
+
+.total {
+  font-weight: bold;
+  margin: 15px 0;
+  font-size: 18px;
 }
 
 
