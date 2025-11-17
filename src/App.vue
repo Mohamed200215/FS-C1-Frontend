@@ -41,6 +41,9 @@ export default {
 
       <div v-for="lesson in lessons" :key="lesson._id" class="lesson-card">
         <h3>{{ lesson.subject }}</h3>
+        <p>Location: {{ lesson.location }}</p>
+        <p>Price: £{{ lesson.price }}</p>
+        <p>Spaces: {{ lesson.spaces }}</p>
       </div>
     </div>
 
