@@ -8,6 +8,7 @@ export default {
       API_URL: "http://localhost:3000",
       sortBy: "subject",
       sortOrder: "asc",
+      searchQuery: "",
     };
   },
 
@@ -69,6 +70,16 @@ export default {
     <!-- LESSONS PAGE -->
     <div v-if="page === 'lessons'">
       <h2>Lessons</h2>
+
+      <!-- SEARCH BAR UI -->
+<div class="search">
+  <input 
+    type="text" 
+    v-model="searchQuery" 
+    placeholder="Search lessons..."
+  />
+</div>
+
 
 <!-- SORTING UI -->
 <div class="sorting">
@@ -137,5 +148,15 @@ button {
   gap: 10px;
   margin-bottom: 20px;
 }
+
+.search input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+
 
 </style>
