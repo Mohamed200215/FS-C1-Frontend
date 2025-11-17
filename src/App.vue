@@ -50,7 +50,7 @@ addToCart(lesson) {
     return;
   }
 
-  // Continue like normal
+
   if (lesson.spaces > 0) {
     lesson.spaces--;
     this.cart.push(lesson);
@@ -198,12 +198,20 @@ computed: {
         <p>Price: £{{ lesson.price }}</p>
         <p>Spaces: {{ lesson.spaces }}</p>
 
-        <button 
-          @click="addToCart(lesson)"
-          :disabled="lesson.spaces === 0"
-        >
-          Add to Cart
-        </button>
+<button
+  @click="addToCart(lesson)"
+  :disabled="lesson.spaces === 0 || cart.some(item => item._id === lesson._id)"
+>
+  <!-- Fully booked -->
+  <span v-if="lesson.spaces === 0">Fully Booked</span>
+
+  <!-- Already in cart -->
+  <span v-else-if="cart.some(item => item._id === lesson._id)">In Cart</span>
+
+  <!-- Normal add -->
+  <span v-else>Add to Cart</span>
+</button>
+
       </div>
     </div>
 
@@ -311,6 +319,11 @@ button {
   font-weight: bold;
   margin: 15px 0;
   font-size: 18px;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 
