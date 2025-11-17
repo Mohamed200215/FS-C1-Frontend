@@ -44,6 +44,14 @@ export default {
         this.cart.push(lesson);
       }
     },
+
+    removeFromCart(item, index) {
+      const lesson = this.lessons.find((l) => l._id === item._id);
+      if (lesson) {
+        lesson.spaces++;
+      }
+      this.cart.splice(index, 1);
+    },
   },
 
   computed: {
@@ -70,6 +78,7 @@ export default {
   },
 };
 </script>
+
 
 
 
@@ -136,14 +145,18 @@ export default {
     </div>
 
     <!-- CART PAGE -->
-    <div v-if="page === 'cart'">
-      <h2>Your Cart</h2>
+<div 
+  v-for="(item, index) in cart" 
+  :key="item._id" 
+  class="cart-item"
+>
+  <p>{{ item.subject }} - £{{ item.price }}</p>
 
-      <div v-for="item in cart" :key="item._id" class="cart-item">
-        <p>{{ item.subject }} - £{{ item.price }}</p>
-      </div>
+  <button @click="removeFromCart(item, index)">
+    Remove
+  </button>
+</div>
 
-    </div>
 
   </div>
 </template>
