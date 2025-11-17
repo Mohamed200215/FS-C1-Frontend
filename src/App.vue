@@ -1,19 +1,21 @@
 <script>
 export default {
-data() {
-  return {
-    lessons: [],
-    cart: [],
-    page: "lessons",
-    API_URL: "http://localhost:3000",
-    sortBy: "subject",
-    sortOrder: "asc",
-    searchQuery: "",
-    name: "",
-    phone: "",
-  };
-},
-
+  data() {
+    return {
+      lessons: [],
+      cart: [],
+      page: "lessons",
+      API_URL: "http://localhost:3000",
+      sortBy: "subject",
+      sortOrder: "asc",
+      searchQuery: "",
+      name: "",
+      phone: "",
+      nameError: "",
+      phoneError: "",
+      checkoutError: "",
+    };
+  },
 
   methods: {
     async fetchLessons() {
@@ -54,6 +56,32 @@ data() {
         lesson.spaces++;
       }
       this.cart.splice(index, 1);
+    },
+
+    validateCheckout() {
+      this.nameError = "";
+      this.phoneError = "";
+      this.checkoutError = "";
+
+      // Validate name (letters + spaces only)
+      const nameRegex = /^[A-Za-z\s]+$/;
+      if (!nameRegex.test(this.name)) {
+        this.nameError = "Name must contain only letters.";
+      }
+
+      // Validate phone (numbers only)
+      const phoneRegex = /^[0-9]+$/;
+      if (!phoneRegex.test(this.phone)) {
+        this.phoneError = "Phone must contain only digits.";
+      }
+
+      // Check cart not empty
+      if (this.cart.length === 0) {
+        this.checkoutError = "Your cart is empty.";
+      }
+
+      // Return true only if no errors
+      return !this.nameError && !this.phoneError && !this.checkoutError;
     },
   },
 
@@ -147,37 +175,44 @@ data() {
       </div>
     </div>
 
-    <!-- CART PAGE -->
-<div 
-  v-for="(item, index) in cart" 
-  :key="item._id" 
-  class="cart-item"
->
-  <p>{{ item.subject }} - £{{ item.price }}</p>
+ <!-- CART PAGE -->
+<div v-if="page === 'cart'">
+  <h2>Your Cart</h2>
 
-  <button @click="removeFromCart(item, index)">
-    Remove
-  </button>
+  <!-- CART ITEMS -->
+  <div
+    v-for="(item, index) in cart"
+    :key="item._id"
+    class="cart-item"
+  >
+    <p>{{ item.subject }} - £{{ item.price }}</p>
+    <button @click="removeFromCart(item, index)">Remove</button>
+  </div>
 
+  <!-- CHECKOUT FORM -->
   <h3>Checkout</h3>
 
-<form class="checkout-form">
-  <input
-    type="text"
-    v-model="name"
-    placeholder="Your Name"
-  />
+  <form class="checkout-form">
+    <input
+      type="text"
+      v-model="name"
+      placeholder="Your Name"
+    />
+    <p v-if="nameError" style="color:red;">{{ nameError }}</p>
 
-  <input
-    type="text"
-    v-model="phone"
-    placeholder="Phone Number"
-  />
+    <input
+      type="text"
+      v-model="phone"
+      placeholder="Phone Number"
+    />
+    <p v-if="phoneError" style="color:red;">{{ phoneError }}</p>
 
-  <button type="button">
-    Place Order
-  </button>
-</form>
+    <button type="button" @click="validateCheckout">
+      Place Order
+    </button>
+
+    <p v-if="checkoutError" style="color:red;">{{ checkoutError }}</p>
+  </form>
 
 </div>
 
