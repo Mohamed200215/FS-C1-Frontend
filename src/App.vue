@@ -31,11 +31,9 @@ export default {
         if (typeof fieldA === "string") fieldA = fieldA.toLowerCase();
         if (typeof fieldB === "string") fieldB = fieldB.toLowerCase();
 
-        if (this.sortOrder === "asc") {
-          return fieldA > fieldB ? 1 : -1;
-        } else {
-          return fieldA < fieldB ? 1 : -1;
-        }
+        return this.sortOrder === "asc"
+          ? fieldA > fieldB ? 1 : -1
+          : fieldA < fieldB ? 1 : -1;
       });
     },
 
@@ -52,9 +50,7 @@ export default {
 
     removeFromCart(item, index) {
       const lesson = this.lessons.find((l) => l._id === item._id);
-      if (lesson) {
-        lesson.spaces++;
-      }
+      if (lesson) lesson.spaces++;
       this.cart.splice(index, 1);
     },
 
@@ -63,44 +59,66 @@ export default {
       this.phoneError = "";
       this.checkoutError = "";
 
-      // Validate name (letters + spaces only)
       const nameRegex = /^[A-Za-z\s]+$/;
       if (!nameRegex.test(this.name)) {
         this.nameError = "Name must contain only letters.";
       }
 
-      // Validate phone (numbers only)
       const phoneRegex = /^[0-9]+$/;
       if (!phoneRegex.test(this.phone)) {
         this.phoneError = "Phone must contain only digits.";
       }
 
-      // Check cart not empty
       if (this.cart.length === 0) {
         this.checkoutError = "Your cart is empty.";
       }
 
-      // Return true only if no errors
       return !this.nameError && !this.phoneError && !this.checkoutError;
+    },
+
+    // ✅ THIS WAS THE ISSUE — NOW IT'S INSIDE METHODS
+    async placeOrder() {
+      if (!this.validateCheckout()) return;
+
+      const order = {
+        name: this.name,
+        phone: this.phone,
+        items: this.cart.map((item) => ({
+          lessonId: item._id,
+          subject: item.subject,
+          price: item.price,
+        })),
+      };
+
+      const res = await fetch(`${this.API_URL}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order),
+      });
+
+      if (res.ok) {
+        alert("Order placed successfully!");
+        this.name = "";
+        this.phone = "";
+        this.cart = [];
+        this.fetchLessons();
+      } else {
+        alert("Failed to place order.");
+      }
     },
   },
 
   computed: {
     filteredLessons() {
-      if (!this.searchQuery) {
-        return this.lessons;
-      }
-
-      const query = this.searchQuery.toLowerCase();
-
-      return this.lessons.filter((lesson) => {
-        return (
-          lesson.subject.toLowerCase().includes(query) ||
-          lesson.location.toLowerCase().includes(query) ||
-          String(lesson.price).includes(query) ||
-          String(lesson.spaces).includes(query)
-        );
-      });
+      const q = this.searchQuery.toLowerCase();
+      return !q
+        ? this.lessons
+        : this.lessons.filter((lesson) =>
+            lesson.subject.toLowerCase().includes(q) ||
+            lesson.location.toLowerCase().includes(q) ||
+            String(lesson.price).includes(q) ||
+            String(lesson.spaces).includes(q)
+          );
     },
   },
 
@@ -175,46 +193,52 @@ export default {
       </div>
     </div>
 
- <!-- CART PAGE -->
+<!-- CART PAGE -->
 <div v-if="page === 'cart'">
   <h2>Your Cart</h2>
 
-  <!-- CART ITEMS -->
-  <div
-    v-for="(item, index) in cart"
-    :key="item._id"
-    class="cart-item"
-  >
-    <p>{{ item.subject }} - £{{ item.price }}</p>
-    <button @click="removeFromCart(item, index)">Remove</button>
+  <!-- If cart is empty -->
+  <p v-if="cart.length === 0">Your cart is empty.</p>
+
+  <!-- If cart has items -->
+  <div v-else>
+    <!-- Cart items -->
+    <div
+      v-for="(item, index) in cart"
+      :key="item._id"
+      class="cart-item"
+    >
+      <p>{{ item.subject }} - £{{ item.price }}</p>
+      <button @click="removeFromCart(item, index)">Remove</button>
+    </div>
+
+    <!-- Checkout form -->
+    <h3>Checkout</h3>
+
+    <form class="checkout-form">
+      <input
+        type="text"
+        v-model="name"
+        placeholder="Your Name"
+      />
+      <p v-if="nameError" style="color:red;">{{ nameError }}</p>
+
+      <input
+        type="text"
+        v-model="phone"
+        placeholder="Phone Number"
+      />
+      <p v-if="phoneError" style="color:red;">{{ phoneError }}</p>
+
+      <button type="button" @click="placeOrder">
+       Place Order
+      </button>
+
+      <p v-if="checkoutError" style="color:red;">{{ checkoutError }}</p>
+    </form>
   </div>
-
-  <!-- CHECKOUT FORM -->
-  <h3>Checkout</h3>
-
-  <form class="checkout-form">
-    <input
-      type="text"
-      v-model="name"
-      placeholder="Your Name"
-    />
-    <p v-if="nameError" style="color:red;">{{ nameError }}</p>
-
-    <input
-      type="text"
-      v-model="phone"
-      placeholder="Phone Number"
-    />
-    <p v-if="phoneError" style="color:red;">{{ phoneError }}</p>
-
-    <button type="button" @click="validateCheckout">
-      Place Order
-    </button>
-
-    <p v-if="checkoutError" style="color:red;">{{ checkoutError }}</p>
-  </form>
-
 </div>
+
 
 
   </div>
