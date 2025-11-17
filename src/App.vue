@@ -5,8 +5,11 @@ export default {
       lessons: [],
       cart: [],
       page: "lessons", // lessons | cart
-      API_URL: "http://localhost:3000", // your backend URL
-    };
+      API_URL: "http://localhost:3000",
+      sortBy: "subject",
+      sortOrder: "asc",
+       //backend URL
+ };
   },
   methods: {
     async fetchLessons() {
@@ -46,6 +49,23 @@ export default {
     <!-- LESSONS PAGE -->
     <div v-if="page === 'lessons'">
       <h2>Lessons</h2>
+
+      <!-- SORTING UI -->
+<div class="sorting">
+  <label>Sort by:</label>
+  <select v-model="sortBy">
+    <option value="subject">Subject</option>
+    <option value="location">Location</option>
+    <option value="price">Price</option>
+    <option value="spaces">Spaces</option>
+  </select>
+
+  <select v-model="sortOrder">
+    <option value="asc">Ascending</option>
+    <option value="desc">Descending</option>
+  </select>
+</div>
+
 
       <div v-for="lesson in lessons" :key="lesson._id" class="lesson-card">
         <h3>{{ lesson.subject }}</h3>
@@ -89,4 +109,11 @@ button {
   padding: 6px 12px;
   margin-top: 10px;
 }
+
+.sorting {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
 </style>
