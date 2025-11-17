@@ -14,6 +14,7 @@ export default {
       nameError: "",
       phoneError: "",
       checkoutError: "",
+      lastOrder: null,
     };
   },
 
@@ -41,22 +42,18 @@ export default {
       this.page = page;
     },
 
-addToCart(lesson) {
-  // Prevent duplicates
-  const exists = this.cart.find((item) => item._id === lesson._id);
+    addToCart(lesson) {
+      const exists = this.cart.find((item) => item._id === lesson._id);
+      if (exists) {
+        alert("This lesson is already in your cart.");
+        return;
+      }
 
-  if (exists) {
-    alert("This lesson is already in your cart.");
-    return;
-  }
-
-
-  if (lesson.spaces > 0) {
-    lesson.spaces--;
-    this.cart.push(lesson);
-  }
-},
-
+      if (lesson.spaces > 0) {
+        lesson.spaces--;
+        this.cart.push(lesson);
+      }
+    },
 
     removeFromCart(item, index) {
       const lesson = this.lessons.find((l) => l._id === item._id);
@@ -86,7 +83,6 @@ addToCart(lesson) {
       return !this.nameError && !this.phoneError && !this.checkoutError;
     },
 
-
     async placeOrder() {
       if (!this.validateCheckout()) return;
 
@@ -107,34 +103,38 @@ addToCart(lesson) {
       });
 
       if (res.ok) {
-        alert("Order placed successfully!");
+        const savedOrder = await res.json();
+        this.lastOrder = savedOrder;
+
         this.name = "";
         this.phone = "";
         this.cart = [];
-        this.fetchLessons();
+        await this.fetchLessons();
+
+        this.page = "confirmation";
       } else {
-        alert("Failed to place order.");
+        this.checkoutError = "Failed to place order. Please try again.";
       }
     },
   },
 
-computed: {
-  filteredLessons() {
-    const q = this.searchQuery.toLowerCase();
-    return !q
-      ? this.lessons
-      : this.lessons.filter((lesson) =>
-          lesson.subject.toLowerCase().includes(q) ||
-          lesson.location.toLowerCase().includes(q) ||
-          String(lesson.price).includes(q) ||
-          String(lesson.spaces).includes(q)
-        );
-  },
+  computed: {
+    filteredLessons() {
+      const q = this.searchQuery.toLowerCase();
+      return !q
+        ? this.lessons
+        : this.lessons.filter((lesson) =>
+            lesson.subject.toLowerCase().includes(q) ||
+            lesson.location.toLowerCase().includes(q) ||
+            String(lesson.price).includes(q) ||
+            String(lesson.spaces).includes(q)
+          );
+    },
 
-  totalPrice() {
-    return this.cart.reduce((sum, item) => sum + item.price, 0);
-  }
-},
+    totalPrice() {
+      return this.cart.reduce((sum, item) => sum + item.price, 0);
+    }
+  },
 
   mounted() {
     this.fetchLessons();
@@ -148,12 +148,9 @@ computed: {
 <template>
   <div class="container">
 
-    <!-- NAVIGATION BUTTONS -->
+    <!-- NAVIGATION -->
     <div style="margin-bottom: 20px;">
-      <button @click="switchPage('lessons')">
-        Lessons
-      </button>
-
+      <button @click="switchPage('lessons')">Lessons</button>
       <button @click="switchPage('cart')" :disabled="cart.length === 0">
         Cart ({{ cart.length }})
       </button>
@@ -163,111 +160,95 @@ computed: {
     <div v-if="page === 'lessons'">
       <h2>Lessons</h2>
 
-      <!-- SEARCH BAR UI -->
-<div class="search">
-  <input 
-    type="text" 
-    v-model="searchQuery" 
-    placeholder="Search lessons..."
-  />
-</div>
+      <div class="search">
+        <input v-model="searchQuery" placeholder="Search lessons..." />
+      </div>
 
+      <div class="sorting">
+        <label>Sort by:</label>
+        <select v-model="sortBy" @change="sortLessons">
+          <option value="subject">Subject</option>
+          <option value="location">Location</option>
+          <option value="price">Price</option>
+          <option value="spaces">Spaces</option>
+        </select>
 
-<!-- SORTING UI -->
-<div class="sorting">
-  <label>Sort by:</label>
+        <select v-model="sortOrder" @change="sortLessons">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
 
-  <select v-model="sortBy" @change="sortLessons">
-    <option value="subject">Subject</option>
-    <option value="location">Location</option>
-    <option value="price">Price</option>
-    <option value="spaces">Spaces</option>
-  </select>
-
-  <select v-model="sortOrder" @change="sortLessons">
-    <option value="asc">Ascending</option>
-    <option value="desc">Descending</option>
-  </select>
-</div>
-
-
-
-     <div v-for="lesson in filteredLessons" :key="lesson._id" class="lesson-card">
+      <div v-for="lesson in filteredLessons" :key="lesson._id" class="lesson-card">
         <h3>{{ lesson.subject }}</h3>
         <p>Location: {{ lesson.location }}</p>
         <p>Price: £{{ lesson.price }}</p>
         <p>Spaces: {{ lesson.spaces }}</p>
 
-<button
-  @click="addToCart(lesson)"
-  :disabled="lesson.spaces === 0 || cart.some(item => item._id === lesson._id)"
->
-  <!-- Fully booked -->
-  <span v-if="lesson.spaces === 0">Fully Booked</span>
-
-  <!-- Already in cart -->
-  <span v-else-if="cart.some(item => item._id === lesson._id)">In Cart</span>
-
-  <!-- Normal add -->
-  <span v-else>Add to Cart</span>
-</button>
-
+        <button
+          @click="addToCart(lesson)"
+          :disabled="lesson.spaces === 0 || cart.some(i => i._id === lesson._id)"
+        >
+          <span v-if="lesson.spaces === 0">Fully Booked</span>
+          <span v-else-if="cart.some(i => i._id === lesson._id)">In Cart</span>
+          <span v-else>Add to Cart</span>
+        </button>
       </div>
     </div>
 
-<!-- CART PAGE -->
-<div v-if="page === 'cart'">
-  <h2>Your Cart</h2>
 
-  <!-- If cart is empty -->
-  <p v-if="cart.length === 0">Your cart is empty.</p>
+    <!-- CART PAGE -->
+    <div v-if="page === 'cart'">
+      <h2>Your Cart</h2>
 
-  <!-- If cart has items -->
-  <div v-else>
-    <!-- Cart items -->
-    <div
-      v-for="(item, index) in cart"
-      :key="item._id"
-      class="cart-item"
-    >
-      <p>{{ item.subject }} - £{{ item.price }}</p>
-      <button @click="removeFromCart(item, index)">Remove</button>
+      <p v-if="cart.length === 0">Your cart is empty.</p>
+
+      <div v-else>
+        <div v-for="(item, index) in cart" :key="item._id" class="cart-item">
+          <p>{{ item.subject }} - £{{ item.price }}</p>
+          <button @click="removeFromCart(item, index)">Remove</button>
+        </div>
+
+        <p class="total">Total: £{{ totalPrice }}</p>
+
+        <h3>Checkout</h3>
+
+        <form class="checkout-form">
+          <input v-model="name" placeholder="Your Name" />
+          <p v-if="nameError" style="color:red;">{{ nameError }}</p>
+
+          <input v-model="phone" placeholder="Phone Number" />
+          <p v-if="phoneError" style="color:red;">{{ phoneError }}</p>
+
+          <button type="button" @click="placeOrder">Place Order</button>
+
+          <p v-if="checkoutError" style="color:red;">{{ checkoutError }}</p>
+        </form>
+      </div>
     </div>
 
-    <!-- Checkout form -->
 
-<p class="total">Total: £{{ totalPrice }}</p>
+    <!-- CONFIRMATION PAGE -->
+    <div v-if="page === 'confirmation'">
+      <h2>Order Confirmed</h2>
 
-    <h3>Checkout</h3>
+      <p v-if="lastOrder">
+        Thank you, {{ lastOrder.name }}. Your order has been placed successfully.
+      </p>
 
-    <form class="checkout-form">
-      <input
-        type="text"
-        v-model="name"
-        placeholder="Your Name"
-      />
-      <p v-if="nameError" style="color:red;">{{ nameError }}</p>
+      <h3>Ordered Lessons:</h3>
+      <ul>
+        <li v-for="item in lastOrder.items" :key="item.lessonId">
+          {{ item.subject }} - £{{ item.price }}
+        </li>
+      </ul>
 
-      <input
-        type="text"
-        v-model="phone"
-        placeholder="Phone Number"
-      />
-      <p v-if="phoneError" style="color:red;">{{ phoneError }}</p>
-
-      <button type="button" @click="placeOrder">
-       Place Order
-      </button>
-
-      <p v-if="checkoutError" style="color:red;">{{ checkoutError }}</p>
-    </form>
-  </div>
-</div>
-
-
+      <button @click="switchPage('lessons')">Back to Lessons</button>
+    </div>
 
   </div>
 </template>
+
 
 <style>
 .container {
@@ -325,6 +306,12 @@ button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+
+ul {
+  padding-left: 20px;
+}
+
 
 
 </style>
