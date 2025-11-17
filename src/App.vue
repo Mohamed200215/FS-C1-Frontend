@@ -4,21 +4,39 @@ export default {
     return {
       lessons: [],
       cart: [],
-      page: "lessons", // lessons | cart
+      page: "lessons",
       API_URL: "http://localhost:3000",
       sortBy: "subject",
       sortOrder: "asc",
-       //backend URL
- };
+    };
   },
+
   methods: {
     async fetchLessons() {
       const res = await fetch(`${this.API_URL}/lessons`);
       this.lessons = await res.json();
     },
+
+    sortLessons() {
+      this.lessons.sort((a, b) => {
+        let fieldA = a[this.sortBy];
+        let fieldB = b[this.sortBy];
+
+        if (typeof fieldA === "string") fieldA = fieldA.toLowerCase();
+        if (typeof fieldB === "string") fieldB = fieldB.toLowerCase();
+
+        if (this.sortOrder === "asc") {
+          return fieldA > fieldB ? 1 : -1;
+        } else {
+          return fieldA < fieldB ? 1 : -1;
+        }
+      });
+    },
+
     switchPage(page) {
       this.page = page;
     },
+
     addToCart(lesson) {
       if (lesson.spaces > 0) {
         lesson.spaces--;
@@ -26,11 +44,13 @@ export default {
       }
     },
   },
+
   mounted() {
     this.fetchLessons();
-  }
+  },
 };
 </script>
+
 
 <template>
   <div class="container">
@@ -50,21 +70,23 @@ export default {
     <div v-if="page === 'lessons'">
       <h2>Lessons</h2>
 
-      <!-- SORTING UI -->
+<!-- SORTING UI -->
 <div class="sorting">
   <label>Sort by:</label>
-  <select v-model="sortBy">
+
+  <select v-model="sortBy" @change="sortLessons">
     <option value="subject">Subject</option>
     <option value="location">Location</option>
     <option value="price">Price</option>
     <option value="spaces">Spaces</option>
   </select>
 
-  <select v-model="sortOrder">
+  <select v-model="sortOrder" @change="sortLessons">
     <option value="asc">Ascending</option>
     <option value="desc">Descending</option>
   </select>
 </div>
+
 
 
       <div v-for="lesson in lessons" :key="lesson._id" class="lesson-card">
