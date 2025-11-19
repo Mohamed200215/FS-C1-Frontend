@@ -100,7 +100,20 @@ export default {
         this.phone = "";
         this.cart = [];
         await this.fetchLessons();
-        this.page = "confirmation";
+        // UPDATE SPACES IN DATABASE FOR EACH LESSON ORDERED
+for (const item of this.lastOrder.items) {
+  const lesson = this.lessons.find(l => l._id === item.lessonId);
+
+  if (lesson) {
+    await fetch(`${this.API_URL}/lessons/${item.lessonId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ spaces: lesson.spaces })
+    });
+  }
+}
+
+      this.page = "confirmation";
       } else {
         this.checkoutError = "Order failed.";
       }
@@ -194,7 +207,7 @@ export default {
 
           <div class="overlay">
 
-            <!-- FIXED TITLE + LOCATION WITH PIN -->
+
            <h3 class="subject-title text-box">{{ lesson.subject }}</h3>
 
 <p class="location-box text-box">📍 {{ lesson.location }}</p>
@@ -549,7 +562,7 @@ input {
 }
 
 .confirm-card {
-  background: #000000d0; /* transparent black */
+  background: #000000d0; 
   padding: 30px;
   width: 450px;
   border-radius: 12px;
