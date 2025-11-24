@@ -5,7 +5,7 @@ export default {
       lessons: [],
       cart: [],
       page: "lessons",
-      API_URL: "http://localhost:3000",
+      API_URL:"https://backend-cxhb.onrender.com",
       sortBy: "subject",
       sortOrder: "asc",
       searchQuery: "",
@@ -100,6 +100,7 @@ export default {
         this.phone = "";
         this.cart = [];
         await this.fetchLessons();
+
         // UPDATE SPACES IN DATABASE FOR EACH LESSON ORDERED
 for (const item of this.lastOrder.items) {
   const lesson = this.lessons.find(l => l._id === item.lessonId);
