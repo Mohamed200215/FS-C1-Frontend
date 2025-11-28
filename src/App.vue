@@ -1,11 +1,7 @@
 <script>
-// -----------------------------------------
 // MAIN APP LOGIC (Vue Component)
-// -----------------------------------------
 export default {
-  // -----------------------
   // COMPONENT STATE (DATA)
-  // -----------------------
   data() {
     return {
       lessons: [],
@@ -30,9 +26,7 @@ export default {
     };
   },
 
-  // -----------------------
   // METHODS (APP FUNCTIONS)
-  // -----------------------
   methods: {
     // Fetch lessons from backend API
     async fetchLessons() {
@@ -132,9 +126,9 @@ export default {
         // Refresh lessons from DB
         await this.fetchLessons();
 
-        // -----------------------------------------
+
         // UPDATE SPACES IN DATABASE (PUT Request)
-        // -----------------------------------------
+
         for (const item of this.lastOrder.items) {
           const lesson = this.lessons.find(l => l._id === item.lessonId);
 
@@ -154,27 +148,29 @@ export default {
     },
 
     // Return correct image based on lesson subject
-    subjectImage(subject) {
-      const images = {
-        "Science": "/images/science.jpg",
-        "Math": "/images/math.jpg",
-        "Music": "/images/music.jpg",
-        "Physical Education": "/images/pe.jpg",
-        "Drama": "/images/drama.jpg",
-        "Art": "/images/art.jpg",
-        "Food Technology": "/images/food.jpg",
-        "Media Studies": "/images/media.jpg",
-        "History": "/images/history.jpg",
-        "Geography": "/images/geography.jpg",
-      };
+subjectImage(subject) {
+  const images = {
+    "Science": new URL("./assets/images/science.jpg", import.meta.url).href,
+    "Math": new URL("./assets/images/math.jpg", import.meta.url).href,
+    "Music": new URL("./assets/images/music.jpg", import.meta.url).href,
+    "Physical Education": new URL("./assets/images/pe.jpg", import.meta.url).href,
+    "Drama": new URL("./assets/images/drama.jpg", import.meta.url).href,
+    "Art": new URL("./assets/images/art.jpg", import.meta.url).href,
+    "Food Technology": new URL("./assets/images/food.jpg", import.meta.url).href,
+    "Media Studies": new URL("./assets/images/media.jpg", import.meta.url).href,
+    "History": new URL("./assets/images/history.jpg", import.meta.url).href,
+    "Geography": new URL("./assets/images/geography.jpg", import.meta.url).href
+  };
 
-      return images[subject] || "/images/default.jpg";
-    },
+  return images[subject] || new URL("./assets/images/default.jpg", import.meta.url).href;
+}
+
+,
   },
 
-  // -----------------------
+
   // COMPUTED PROPERTIES
-  // -----------------------
+
   computed: {
     // Apply search filter
     filteredLessons() {
@@ -194,9 +190,8 @@ export default {
     },
   },
 
-  // -----------------------
   // LIFECYCLE HOOK
-  // -----------------------
+
   mounted() {
     this.fetchLessons();
   },
@@ -495,7 +490,7 @@ body::before {
 .about-container {
   width:700px;
   margin:auto;
-  background:black;
+  background:rgb(255, 255, 255);
   padding:20px;
   border-radius:10px;
 }
